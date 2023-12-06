@@ -3,6 +3,7 @@ import torch.nn as nn
 import gymnasium as gym
 import math
 import matplotlib.pyplot as plt
+import cProfile
 
 from tqdm import tqdm
 from dqn import DQN
@@ -10,8 +11,7 @@ from buffer import Buffer
 from torch.utils.tensorboard.writer import SummaryWriter
 
 def get_action(state, steps):
-    epsilon = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * steps / EPS_DECAY)
+    epsilon = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps / EPS_DECAY)
     if torch.rand(1) < epsilon:
         return env.action_space.sample()
     with torch.no_grad():
@@ -50,28 +50,7 @@ def update_params():
     loss.backward()
     optimizer.step()
 
-if __name__ == "__main__":
-    env = gym.make("CartPole-v1", max_episode_steps=200)
-    writer = SummaryWriter()
-    num_states = env.observation_space.shape[0]
-    num_actions = env.action_space.n
-    tau = 0.005
-
-    agent = DQN(num_states, num_actions)
-    target = DQN(num_states, num_actions)
-    target.load_state_dict(agent.state_dict())
-
-    buffer = Buffer(10000)
-    rewards = []
-
-    optimizer = torch.optim.AdamW(agent.parameters(), lr=1e-4, amsgrad=True)
-    num_epochs = 1000
-    batch_size = 128
-    gamma = 0.99
-    EPS_START = 0.9
-    EPS_END = 0.05
-    EPS_DECAY = 1000
-
+def main():
     steps = 0
 
     pbar = tqdm(range(num_epochs))
@@ -113,5 +92,29 @@ if __name__ == "__main__":
         pbar.set_description(f"Reward: {ep_reward:.0f}")
         rewards.append(ep_reward)
 
-    plt.plot(rewards)
-    plt.show()
+#    plt.plot(rewards)
+#    plt.show()
+
+if __name__ == "__main__":
+    env = gym.make("CartPole-v1", max_episode_steps=200)
+    writer = SummaryWriter()
+    num_states = env.observation_space.shape[0]
+    num_actions = env.action_space.n
+    tau = 0.005
+
+    agent = DQN(num_states, num_actions)
+    target = DQN(num_states, num_actions)
+    target.load_state_dict(agent.state_dict())
+
+    buffer = Buffer(10000)
+    rewards = []
+
+    optimizer = torch.optim.AdamW(agent.parameters(), lr=1e-4, amsgrad=True)
+    num_epochs = 200
+    batch_size = 128
+    gamma = 0.99
+    EPS_START = 0.9
+    EPS_END = 0.05
+    EPS_DECAY = 1000
+
+    cProfile.run("main()", "profile.txt")

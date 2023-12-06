@@ -3,13 +3,12 @@ import numpy as np
 import gymnasium as gym
 import math
 import matplotlib.pyplot as plt
+import cProfile
 
 from tqdm import tqdm
 from dqn import DQN
 from buffer import PrioritizedBuffer
 from torch.utils.tensorboard.writer import SummaryWriter
-
-import cProfile
 
 def get_action(state, steps):
     epsilon = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps / EPS_DECAY)
