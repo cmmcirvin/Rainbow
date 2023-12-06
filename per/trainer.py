@@ -19,7 +19,7 @@ def get_action(state, steps):
     with torch.no_grad():
         return agent(state).argmax().item()
 
-def calculate_loss(batch):
+def calculate_loss(priorities, batch):
 
     states, actions, rewards, next_states = zip(*batch)
     non_final_mask = torch.tensor(tuple(map(lambda s: s is not None, next_states)), dtype=torch.bool)
@@ -36,10 +36,11 @@ def calculate_loss(batch):
     
     expected_state_action_values = (next_state_values * gamma) + reward_batch
 
-    loss = torch.mean(torch.pow(expected_state_action_values.unsqueeze(1) - state_action_values, 2))
+    loss = torch.pow(expected_state_action_values.unsqueeze(1) - state_action_values, 2)
     td_errors = expected_state_action_values.unsqueeze(1) - state_action_values
+    loss = loss * torch.tensor(buffer.importance_weights(priorities)).unsqueeze(1)
 
-    return loss, td_errors.clone().detach()
+    return torch.mean(loss), td_errors.clone().detach()
 
 def update_params():
     if len(buffer) < batch_size:
@@ -47,7 +48,7 @@ def update_params():
 
     idxes, priorities, transitions = buffer.sample(batch_size)
 
-    loss, td_errors = calculate_loss(transitions)
+    loss, td_errors = calculate_loss(priorities, transitions)
 
     buffer.update_priorities(np.absolute(td_errors.flatten().numpy()), idxes)
 
@@ -124,4 +125,3 @@ if __name__ == "__main__":
     EPS_DECAY = 1000
 
     cProfile.run("main()", "profile.txt")
-#    main()
