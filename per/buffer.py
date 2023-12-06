@@ -26,6 +26,11 @@ class PrioritizedBuffer:
         self.beta = beta
         self.memory = deque([], maxlen=capacity)
         self.priorities = deque([], maxlen=capacity)
+#        self.capacity = capacity
+#        self.size = 0
+#
+#        self.memory = np.zeros(capacity, dtype=object)
+#        self.priorities = np.zeros(capacity)
 
     def store(self, priority, *args):
 #        self.memory.append((priority, Transition(*args)))
