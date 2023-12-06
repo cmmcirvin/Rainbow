@@ -6,14 +6,13 @@ import matplotlib.pyplot as plt
 
 from tqdm import tqdm
 from dqn import DQN
-from buffer import Buffer, PrioritizedBuffer
+from buffer import PrioritizedBuffer
 from torch.utils.tensorboard.writer import SummaryWriter
 
 import cProfile
 
 def get_action(state, steps):
-    epsilon = EPS_END + (EPS_START - EPS_END) * \
-        math.exp(-1. * steps / EPS_DECAY)
+    epsilon = EPS_END + (EPS_START - EPS_END) * math.exp(-1. * steps / EPS_DECAY)
     if torch.rand(1) < epsilon:
         return env.action_space.sample()
     with torch.no_grad():
@@ -113,7 +112,6 @@ if __name__ == "__main__":
     target.load_state_dict(agent.state_dict())
 
     buffer = PrioritizedBuffer(10000, 0.7, 0.5)
-#    buffer = Buffer(10000)
     rewards = []
 
     optimizer = torch.optim.AdamW(agent.parameters(), lr=1e-4, amsgrad=True)
