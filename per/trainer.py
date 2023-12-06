@@ -116,7 +116,7 @@ if __name__ == "__main__":
     rewards = []
 
     optimizer = torch.optim.AdamW(agent.parameters(), lr=1e-4, amsgrad=True)
-    num_epochs = 100
+    num_epochs = 1000
     batch_size = 128
     gamma = 0.99
     EPS_START = 0.9
